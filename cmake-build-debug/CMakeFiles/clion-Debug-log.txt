@@ -1,13 +1,4 @@
 /home/kegure/Documents/CLion-2024.1/clion-2024.1/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/kegure/Documents/CLion-2024.1/clion-2024.1/bin/ninja/linux/x64/ninja -G Ninja -S /home/kegure/CLionProjects/untitled -B /home/kegure/CLionProjects/untitled/cmake-build-debug
 -- Configuring done (0.0s)
-CMake Error at CMakeLists.txt:6 (add_executable):
-  Cannot find source file:
-
-    main.cpp
-
-
-CMake Error at CMakeLists.txt:6 (add_executable):
-  No SOURCES given to target: untitled
-
-
-CMake Generate step failed.  Build files cannot be regenerated correctly.
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kegure/CLionProjects/untitled/cmake-build-debug
