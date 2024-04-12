@@ -2,12 +2,23 @@
 // Created by kegure on 4/12/24.
 //
 #include <GLFW/glfw3.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+}
 // Control points of the Bezier curve
 float control_points[][2] = {
         {-0.8f, -0.5f},
@@ -107,8 +118,10 @@ int main(void) {
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
