@@ -5,11 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
-
-//Variável para controlar a exibição do polígono de controle
-bool show_control_polygon = false;
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -20,14 +17,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
     if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        if (show_control_polygon) {
-            show_control_polygon = false;
-        }
-        else {
-            show_control_polygon = true;
-        }
     }
 }
 // Control points of the Bezier curve
@@ -59,8 +48,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                     break;
                 }
             }
-        }
-        else if (action == GLFW_RELEASE) {
+        } else if (action == GLFW_RELEASE) {
             selected_point = -1; // Reset selected point index when mouse button is released
         }
     }
@@ -114,18 +102,6 @@ void draw_bezier_curve() {
     glEnd();
 }
 
-// Draw control polygon
-void draw_control_polygon() {
-    if (show_control_polygon) {
-        glColor3f(0.0f, 0.0f, 0.0f); // Cor preta
-        glBegin(GL_LINE_LOOP);
-        for (int i = 0; i < 4; i++) {
-            glVertex2fv(control_points[i]);
-        }
-        glEnd();
-    }
-}
-
 int main(void) {
     GLFWwindow* window;
 
@@ -149,12 +125,9 @@ int main(void) {
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(255.0f, 255.0f, 255.0f, 255.0f); // Definindo branco como cor do backgrownd
+
         draw_axes();
         draw_bezier_curve();
-        if (show_control_polygon) {
-            draw_control_polygon();
-        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
