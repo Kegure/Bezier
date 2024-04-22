@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <iostream>
-#include <vector>
+
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -147,34 +147,32 @@ void draw_axes() {
     glEnd();
 }
 
-//ainda falta ajeitar
-void calculateBezierPoint() {
-    float t = MAX_POINTS;
-    int n = control_points[].size() - 1;
-    float x = 0;
-    float y = 0;
-    for (int i = 0; i <= n; i++) {
-        float b = 1.0;
-        for (int j = 0; j <= n; j++) {
-            if (j != i) {
-                b *= (t - j) / (i - j);
-            }
-        }
-        x += controlPoints[i].first * b;
-        y += controlPoints[i].second * b;
-        bezierPoints.emplace_back(x, y);
-    }
-}
 
-// Draw Bezier curve          ainda falta ajeitar
 void draw_bezier_curve() {
     glColor3f(1.0f, 0.0f, 0.0f); // Red color
     glBegin(GL_LINE_STRIP);
-    for (int i = 0; i <= numSegments; i++) {
-        float t = (float)i / (float)numSegments;
-        float x, y;
-        glVertex2f(x, y);
+
+    int num_steps = 100;
+
+    for (int i = 0; i <= num_steps; ++i) {
+        float t = static_cast<float>(i) / num_steps;
+
+        float temp_points[MAX_POINTS][2];
+        for (int j = 0; j < num_points; ++j) {
+            temp_points[j][0] = control_points[j][0];
+            temp_points[j][1] = control_points[j][1];
+        }
+
+        for (int k = num_points - 1; k > 0; --k) {
+            for (int j = 0; j < k; ++j) {
+                temp_points[j][0] = (1 - t) * temp_points[j][0] + t * temp_points[j + 1][0];
+                temp_points[j][1] = (1 - t) * temp_points[j][1] + t * temp_points[j + 1][1];
+            }
+        }
+
+        glVertex2f(temp_points[0][0], temp_points[0][1]);
     }
+
     glEnd();
 }
 
