@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <iostream>
-
+#include <cmath>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -146,6 +146,17 @@ void draw_axes() {
     glVertex2f(0.0f, 240.0f);
     glEnd();
 }
+int binomialCoefficient(int n, int k) {
+    if (k < 0 || k > n) return 0;
+    if (k == 0 || k == n) return 1;
+
+    int result = 1;
+    for (int i = 1; i <= k; ++i) {
+        result *= (n - i + 1);
+        result /= i;
+    }
+    return result;
+}
 
 
 void draw_bezier_curve() {
@@ -157,25 +168,20 @@ void draw_bezier_curve() {
     for (int i = 0; i <= num_steps; ++i) {
         float t = static_cast<float>(i) / num_steps;
 
-        float temp_points[MAX_POINTS][2];
+        float p[2] = {0.0f, 0.0f};
         for (int j = 0; j < num_points; ++j) {
-            temp_points[j][0] = control_points[j][0];
-            temp_points[j][1] = control_points[j][1];
+            float blend_factor = binomialCoefficient(num_points - 1, j) * pow(1 - t, num_points - 1 - j) * pow(t, j);
+            p[0] += blend_factor * control_points[j][0];
+            p[1] += blend_factor * control_points[j][1];
         }
 
-        for (int k = num_points - 1; k > 0; --k) {
-            for (int j = 0; j < k; ++j) {
-                temp_points[j][0] = (1 - t) * temp_points[j][0] + t * temp_points[j + 1][0];
-                temp_points[j][1] = (1 - t) * temp_points[j][1] + t * temp_points[j + 1][1];
-            }
-        }
-
-        glVertex2f(temp_points[0][0], temp_points[0][1]);
+        glVertex2f(p[0], p[1]);
     }
 
     glEnd();
 }
 
+// Function to compute binomial coefficient (n choose k)
 void draw_control_points() {
     glColor3f(0.0f, 0.0f, 0.0f);
     glPointSize(4.0f);
@@ -242,7 +248,6 @@ int main(int argc, char* argv[]) {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
     glfwTerminate();
     return 0;
 }
