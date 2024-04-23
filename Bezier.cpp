@@ -135,15 +135,15 @@ void draw_axes() {
 
     glColor3f(0.0f, 1.0f, 0.0f); // Green color
     glBegin(GL_LINES);
-    glVertex2f(-100.0f, 0.0f);
-    glVertex2f(100.0f, 0.0f);
+    glVertex2f(-320.0f, 0.0f);
+    glVertex2f(320.0f, 0.0f);
     glEnd();
 
 
     glColor3f(0.0f, 0.0f, 1.0f); // Blue color
     glBegin(GL_LINES);
-    glVertex2f(0.0f, -100.0f);
-    glVertex2f(0.0f, 100.0f);
+    glVertex2f(0.0f, -240.0f);
+    glVertex2f(0.0f, 240.0f);
     glEnd();
 }
 
@@ -224,7 +224,7 @@ int main(int argc, char* argv[]) {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-100.0, 100.0, -100.0, 100.0, -1.0, 1.0); // Adjust the projection matrix
+    glOrtho(-320.0, 320.0, -240.0, 240.0, -1.0, 1.0); // Adjust the projection matrix
     glMatrixMode(GL_MODELVIEW);
     num_points = loadControlPoints(argv[1], control_points);
     if (num_points == -1) {
