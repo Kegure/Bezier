@@ -11,11 +11,15 @@
 #define MAX_POINTS 100
 #define MAX_TRANS 100
 #define MAX_ROTATION 100
+#define MAX_SCALING 100
+#define MAX_CISALHAMENTO 100
 int num_points = 0;
 bool show_control_polygon = false;
 float control_points[MAX_POINTS][2];
 int translation[MAX_TRANS][2];
 int rotation[MAX_ROTATION];
+int scaling[MAX_SCALING][2];
+int cisalhamento[MAX_CISALHAMENTO][2];
 typedef struct {
     float r;
     float g;
@@ -71,6 +75,8 @@ int loadControlPoints(const char *filename, float control_points[][2]) {
     int num_points = 0; // Counter for the number of points read
     int num_translation = 0;
     int num_rotations = 0 ;
+    int num_scaling = 0;
+    int num_cisalhamento = 0;
     char line[100]; // Assuming maximum line length is 100 characters
     while (fgets(line, sizeof(line), file)) {
         if (line[0] == 'v') {
@@ -106,28 +112,58 @@ int loadControlPoints(const char *filename, float control_points[][2]) {
             } else {
                 printf("Error parsing line: %s\n", line);
             }
+        } else if (line[0] == 's') {
+            int a, b;
+            if (sscanf(line, "s %d %d", &a, &b) == 2) {
+                scaling[num_scaling][0] = a;
+                scaling[num_scaling][1] = b;
+                num_scaling++;
+            } else {
+                printf("Error parsing line: %s\n", line);
+            }
+        } else if (line[0] == 'c') {
+            int a, b;
+            if (sscanf(line, "c %d %d", &a, &b) == 2) {
+                cisalhamento[num_cisalhamento][0] = a;
+                cisalhamento[num_cisalhamento][1] = b;
+                num_cisalhamento++;
+            } else {
+                printf("Error parsing line: %s\n", line);
+            }
         }
     }
-    fclose(file);
-    //code just for tests
-    for (int i = 0; i < num_points; ++i) {
-        for (int j = 0; j < 2; ++j) {
-            printf("%.2f ",control_points[i][j]);
+            fclose(file);
+            //code just for tests
+            for (int i = 0; i < num_points; ++i) {
+                for (int j = 0; j < 2; ++j) {
+                    printf("%.2f ", control_points[i][j]);
+                }
+                printf("\n");
+            }
+            for (int i = 0; i < num_translation; ++i) {
+                for (int j = 0; j < 2; ++j) {
+                    printf("%.2d ", translation[i][j]);
+                }
+                printf("\n");
+            }
+            for (int i = 0; i < num_rotations; ++i) {
+                printf("%.2d ", rotation[i]);
+                printf("\n");
+            }
+            for (int i = 0; i < num_cisalhamento; ++i) {
+                for (int j = 0; j < 2; ++j) {
+                    printf("%.2d ", cisalhamento[i][j]);
+                }
+                printf("\n");
+            }
+            for (int i = 0; i < num_scaling; ++i) {
+                for (int j = 0; j < 2; ++j) {
+                    printf("%.2d ", scaling[i][j]);
+                }
+                printf("\n");
+            }
+            return num_points;
         }
-        printf("\n");
-    }
-    for (int i = 0; i < num_translation; ++i) {
-        for (int j = 0; j < 2; ++j) {
-            printf("%.2d ", translation[i][j]);
-        }
-        printf("\n");
-    }
-    for (int i = 0; i < num_rotations; ++i) {
-        printf("%.2d ", rotation[i]);
-        printf("\n");
-    }
-    return num_points; // Return the number of points loaded
-}
 
 
 
