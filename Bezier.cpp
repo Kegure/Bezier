@@ -94,15 +94,15 @@ void applyRotationOnDraw(){
 
 void applyScalingOnDraw(){
     for (auto& point : actualDraw) {
-        point.first = transformations[posTransf].second.first;
-        point.second= transformations[posTransf].second.second;
+        point.first = transformations[posTransf].second.first; // Escala em X
+        point.second= transformations[posTransf].second.second; // Escala em Y
     }
 }
 
 void applyShearingOnDraw(){
     for (auto& point : actualDraw) {
-        float new_x = point.first + transformations[posTransf].second.first * point.second;
-        float new_y = point.second + transformations[posTransf].second.second * point.first;
+        float new_x = point.first + transformations[posTransf].second.first * point.second; // Cisalhamento em X
+        float new_y = point.second + transformations[posTransf].second.second * point.first; // Cisalhamento em Y
         point.first = new_x;
         point.second = new_y;
     }
@@ -117,6 +117,10 @@ void applyReflectionOnDraw(){
 
 void applyTransformation(){
     drawBeforeTransformation.assign(actualDraw.begin(), actualDraw.end());
+    if(posTransf > transformations.size()){
+        posTransf = 0;
+        actualDraw.assign(controlPoints.begin(), controlPoints.end());
+    }
     if(transformations[posTransf].first == TRANSLATION){
         applyTranslationOnDraw();
 
@@ -132,7 +136,6 @@ void applyTransformation(){
     }else if(transformations[posTransf].first == REFLECTION){
         applyReflectionOnDraw();
     }
-
     posTransf++;
 }
 
@@ -147,8 +150,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         applyTransformation();
     }
 }
-
-
 
 int loadControlPoints(const char *filename) {
     float x, y;
@@ -258,8 +259,8 @@ int binomialCoefficient(int n, int k) {
     return result;
 }
 
-void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw) {
-    glColor3f(1.0f, 0.0f, 0.0f); // Red color
+void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw, Color curveColor) {
+    glColor3f(curveColor.r, curveColor.g, curveColor.b); // Red color
 
     int num_steps = 100;
 
@@ -347,9 +348,9 @@ int main(int argc, char* argv[]) {
 
         draw_axes();
         if(!drawBeforeTransformation.empty()){
-            draw_bezier_curve(drawBeforeTransformation);
+            draw_bezier_curve(drawBeforeTransformation, colors[10]);
         }
-        draw_bezier_curve(actualDraw);
+        draw_bezier_curve(actualDraw, colors[2]);
 
         if (show_control_polygon) {
             if(!drawBeforeTransformation.empty()){
