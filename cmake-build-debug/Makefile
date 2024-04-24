@@ -153,6 +153,30 @@ Bezier.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/untitled.dir/build.make CMakeFiles/untitled.dir/Bezier.cpp.s
 .PHONY : Bezier.cpp.s
 
+teste.o: teste.cpp.o
+.PHONY : teste.o
+
+# target to build an object file
+teste.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/untitled.dir/build.make CMakeFiles/untitled.dir/teste.cpp.o
+.PHONY : teste.cpp.o
+
+teste.i: teste.cpp.i
+.PHONY : teste.i
+
+# target to preprocess a source file
+teste.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/untitled.dir/build.make CMakeFiles/untitled.dir/teste.cpp.i
+.PHONY : teste.cpp.i
+
+teste.s: teste.cpp.s
+.PHONY : teste.s
+
+# target to generate assembly for a file
+teste.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/untitled.dir/build.make CMakeFiles/untitled.dir/teste.cpp.s
+.PHONY : teste.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -165,6 +189,9 @@ help:
 	@echo "... Bezier.o"
 	@echo "... Bezier.i"
 	@echo "... Bezier.s"
+	@echo "... teste.o"
+	@echo "... teste.i"
+	@echo "... teste.s"
 .PHONY : help
 
 

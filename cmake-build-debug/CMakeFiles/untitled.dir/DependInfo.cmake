@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/kali/Downloads/Bezier/Bezier.cpp" "CMakeFiles/untitled.dir/Bezier.cpp.o" "gcc" "CMakeFiles/untitled.dir/Bezier.cpp.o.d"
+  "/home/kali/Downloads/Bezier/teste.cpp" "CMakeFiles/untitled.dir/teste.cpp.o" "gcc" "CMakeFiles/untitled.dir/teste.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

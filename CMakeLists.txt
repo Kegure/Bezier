@@ -7,5 +7,7 @@ add_executable(untitled Bezier.cpp
         Bezier.cpp
         Bezier.cpp
         Bezier.cpp
-        Bezier.cpp)
+        Bezier.cpp
+        teste.cpp
+        teste.h)
 target_link_libraries(untitled -lglut -lglfw -lGLEW -lGL -lGLU -lSDL2)

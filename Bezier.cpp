@@ -24,6 +24,15 @@ std::vector<std::pair<float, float>> controlPoints;
 //vetor transformacoes (id, valor)
 std::vector<std::pair<char, std::pair<float, float> >> transformations;
 
+//posicao da transformacao atual
+int posTransf = 0;
+
+//vetor dos pontos atuais
+std::vector<std::pair<float, float>> actualDraw;
+
+//vetor dos pontos antes da transformacao
+std::vector<std::pair<float, float>> drawBeforeTransformation;
+
 #define TRANSLATION 't'
 #define ROTATION 'r'
 #define SCALING 's'
@@ -66,14 +75,80 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+void applyTranslationOnDraw(){
+    for (auto& point : actualDraw) {
+        point.first += transformations[posTransf].second.first;
+        point.second += transformations[posTransf].second.second;
+    }
+}
+
+void applyRotationOnDraw(){
+    float angle = transformations[posTransf].second.first * (M_PI / 180.0); // Converter graus para radianos
+    for (auto& point : actualDraw) {
+        float new_x = point.first * cos(angle) - point.second * sin(angle);
+        float new_y = point.first * sin(angle) + point.second * cos(angle);
+        point.first = new_x;
+        point.second = new_y;
+    }
+}
+
+void applyScalingOnDraw(){
+    for (auto& point : actualDraw) {
+        point.first = transformations[posTransf].second.first;
+        point.second= transformations[posTransf].second.second;
+    }
+}
+
+void applyShearingOnDraw(){
+    for (auto& point : actualDraw) {
+        float new_x = point.first + transformations[posTransf].second.first * point.second;
+        float new_y = point.second + transformations[posTransf].second.second * point.first;
+        point.first = new_x;
+        point.second = new_y;
+    }
+}
+
+void applyReflectionOnDraw(){
+    for (auto& point : actualDraw) {
+        point.first = 2 * transformations[posTransf].second.first - point.first;
+        point.second = 2 * transformations[posTransf].second.second - point.second;
+    }
+}
+
+void applyTransformation(){
+    drawBeforeTransformation.assign(actualDraw.begin(), actualDraw.end());
+    if(transformations[posTransf].first == TRANSLATION){
+        applyTranslationOnDraw();
+
+    }else if(transformations[posTransf].first == ROTATION){
+        applyRotationOnDraw();
+
+    }else if(transformations[posTransf].first == SCALING){
+        applyScalingOnDraw();
+
+    }else if(transformations[posTransf].first == SHEARING){
+        applyShearingOnDraw();
+
+    }else if(transformations[posTransf].first == REFLECTION){
+        applyReflectionOnDraw();
+    }
+
+    posTransf++;
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        show_control_polygon = !show_control_polygon; // Toggle visibility
+        show_control_polygon = !show_control_polygon; // vizualizar o poligono
+    }
+    if(key == GLFW_KEY_SPACE && action == GLFW_PRESS){ //aplicar transformacoes
+        applyTransformation();
     }
 }
+
+
 
 int loadControlPoints(const char *filename) {
     float x, y;
@@ -113,9 +188,17 @@ int loadControlPoints(const char *filename) {
             } else {
                 printf("Error parsing line: %s\n", line);
             }
+
         } else if (line[0] == 'c') {
             if (sscanf(line, "c %f %f", &x, &y) == 2) {
                 transformations.emplace_back(SHEARING, std::make_pair(x,y));
+            } else {
+                printf("Error parsing line: %s\n", line);
+            }
+
+        } else if (line[0] == 'm') {
+            if (sscanf(line, "m %f %f", &x, &y) == 2) {
+                transformations.emplace_back(REFLECTION, std::make_pair(x,y));
             } else {
                 printf("Error parsing line: %s\n", line);
             }
@@ -175,7 +258,7 @@ int binomialCoefficient(int n, int k) {
     return result;
 }
 
-void draw_bezier_curve() {
+void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw) {
     glColor3f(1.0f, 0.0f, 0.0f); // Red color
 
     int num_steps = 100;
@@ -189,8 +272,8 @@ void draw_bezier_curve() {
             float p[2] = {0.0f, 0.0f};
             for (int j = 0; j < 4; ++j) {
                 float blend_factor = binomialCoefficient(4 - 1, j) * pow(1 - t, 4 - 1 - j) * pow(t, j);
-                p[0] += blend_factor * controlPoints[k * 4 + j].first;
-                p[1] += blend_factor * controlPoints[k * 4 + j].second;
+                p[0] += blend_factor * pointsForDraw[k * 4 + j].first;
+                p[1] += blend_factor * pointsForDraw[k * 4 + j].second;
             }
 
             glVertex2f(p[0], p[1]);
@@ -201,18 +284,18 @@ void draw_bezier_curve() {
 }
 
 // Function to compute binomial coefficient (n choose k)
-void draw_control_points() {
+void draw_control_points(std::vector<std::pair<float, float>> pointsForDraw) {
     glColor3f(0.0f, 0.0f, 0.0f);
     glPointSize(4.0f);
 
     glBegin(GL_POINTS);
     for (int i = 0; i < num_points; ++i) {
-        glVertex2f(controlPoints[i].first, controlPoints[i].second);
+        glVertex2f(pointsForDraw[i].first, pointsForDraw[i].second);
     }
     glEnd();
 }
 
-void draw_control_polygon() {
+void draw_control_polygon(std::vector<std::pair<float, float>> pointsForDraw) {
     glColor3f(0.0f, 0.0f, 0.0f); // Black color
 
     // Draw lines between the control points in segments of four
@@ -220,7 +303,7 @@ void draw_control_polygon() {
         glBegin(GL_LINE_STRIP);
         int end = std::min(i + 4, num_points); // Ensure we don't go beyond the number of points
         for (int j = i; j < end; ++j) {
-            glVertex2f(controlPoints[j].first, controlPoints[j].second);
+            glVertex2f(pointsForDraw[j].first, pointsForDraw[j].second);
         }
         glEnd();
     }
@@ -258,16 +341,23 @@ int main(int argc, char* argv[]) {
     if (loadControlPoints(argv[1]) == -1) {
         return 1; // Error loading control points
     }
-
+    actualDraw.assign(controlPoints.begin(), controlPoints.end());
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         draw_axes();
-        draw_bezier_curve();
+        if(!drawBeforeTransformation.empty()){
+            draw_bezier_curve(drawBeforeTransformation);
+        }
+        draw_bezier_curve(actualDraw);
 
         if (show_control_polygon) {
-            draw_control_points();
-            draw_control_polygon();
+            if(!drawBeforeTransformation.empty()){
+                draw_control_points(drawBeforeTransformation);
+                draw_control_polygon(drawBeforeTransformation);
+            }
+            draw_control_points(actualDraw);
+            draw_control_polygon(actualDraw);
         }
         glfwSwapBuffers(window);
         glfwPollEvents();

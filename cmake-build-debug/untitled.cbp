@@ -85,6 +85,12 @@
 		<Unit filename="/home/kali/Downloads/Bezier/Bezier.cpp">
 			<Option target="untitled"/>
 		</Unit>
+		<Unit filename="/home/kali/Downloads/Bezier/teste.cpp">
+			<Option target="untitled"/>
+		</Unit>
+		<Unit filename="/home/kali/Downloads/Bezier/teste.h">
+			<Option target="untitled"/>
+		</Unit>
 		<Unit filename="/home/kali/Downloads/Bezier/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
