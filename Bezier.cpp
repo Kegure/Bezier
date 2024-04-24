@@ -120,6 +120,7 @@ void applyTransformation(){
     if(posTransf > transformations.size()){
         posTransf = 0;
         actualDraw.assign(controlPoints.begin(), controlPoints.end());
+        return;
     }
     if(transformations[posTransf].first == TRANSLATION){
         applyTranslationOnDraw();
