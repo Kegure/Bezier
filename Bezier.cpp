@@ -5,21 +5,32 @@
 #include <cstdio>
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
+#include <vector>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
-#define MAX_POINTS 100
-#define MAX_TRANS 100
-#define MAX_ROTATION 100
-#define MAX_SCALING 100
-#define MAX_CISALHAMENTO 100
+
 int num_points = 0;
+
+//Variável para controlar a exibição do polígono de controle
 bool show_control_polygon = false;
-float control_points[MAX_POINTS][2];
-int translation[MAX_TRANS][2];
-int rotation[MAX_ROTATION];
-int scaling[MAX_SCALING][2];
-int cisalhamento[MAX_CISALHAMENTO][2];
+
+//pontos de controle
+std::vector<std::pair<float, float>> controlPoints;
+
+//vetor transformacoes (id, valor)
+std::vector<std::pair<char, std::pair<float, float> >> transformations;
+
+#define VETOR 'v'
+#define TRANSLATION 't'
+#define ROTATION 'r'
+#define SCALING 's'
+#define SHEARING 'c' //cisalhamento
+#define REFLECTION 'm' //mirror
+
 typedef struct {
     float r;
     float g;
@@ -65,110 +76,82 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-int loadControlPoints(const char *filename, float control_points[][2]) {
+int loadControlPoints(const char *filename) {
+    float x, y;
+    int degrees;
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         printf("Error opening file!\n");
         return -1; // Return an error code
     }
 
-    int num_points = 0; // Counter for the number of points read
-    int num_translation = 0;
-    int num_rotations = 0 ;
-    int num_scaling = 0;
-    int num_cisalhamento = 0;
     char line[100]; // Assuming maximum line length is 100 characters
     while (fgets(line, sizeof(line), file)) {
         if (line[0] == 'v') {
-            float x, y;
             if (sscanf(line, "v %f %f", &x, &y) == 2) {
-                if (num_points < MAX_POINTS) {
-                    control_points[num_points][0] = x;
-                    control_points[num_points][1] = y;
-                    num_points++;
-                } else {
-                    printf("Max number of points reached!\n");
-                    break;
-                }
+                controlPoints.emplace_back(x, y);
+                num_points++;
             } else {
                 printf("Error parsing line: %s\n", line);
             }
+
         } else if (line[0] == 't') {
-            int a, b;
-            if (sscanf(line, "t %d %d", &a, &b) == 2) {
-                translation[num_translation][0] = a;
-                translation[num_translation][1] = b;
-                num_translation++;
-
+            if (sscanf(line, "t %f %f", &x, &y) == 2) {
+                transformations.emplace_back(TRANSLATION, std::make_pair(x,y));
             } else {
                 printf("Error parsing line: %s\n", line);
             }
-        } else if (line[0] == 'r') {
-            int c;
-            if (sscanf(line, "r %d", &c) == 1) {
-                rotation[num_rotations] = c;
-                num_rotations++;
 
+        } else if (line[0] == 'r') {
+            if (sscanf(line, "r %d", &degrees) == 1) {
+                transformations.emplace_back(ROTATION, std::make_pair(degrees,0));
             } else {
                 printf("Error parsing line: %s\n", line);
             }
         } else if (line[0] == 's') {
-            int a, b;
-            if (sscanf(line, "s %d %d", &a, &b) == 2) {
-                scaling[num_scaling][0] = a;
-                scaling[num_scaling][1] = b;
-                num_scaling++;
+            if (sscanf(line, "s %f %f", &x, &y) == 2) {
+                transformations.emplace_back(SCALING, std::make_pair(x,y));
             } else {
                 printf("Error parsing line: %s\n", line);
             }
         } else if (line[0] == 'c') {
-            int a, b;
-            if (sscanf(line, "c %d %d", &a, &b) == 2) {
-                cisalhamento[num_cisalhamento][0] = a;
-                cisalhamento[num_cisalhamento][1] = b;
-                num_cisalhamento++;
+            if (sscanf(line, "c %f %f", &x, &y) == 2) {
+                transformations.emplace_back(SHEARING, std::make_pair(x,y));
             } else {
                 printf("Error parsing line: %s\n", line);
             }
         }
     }
-            fclose(file);
-            //code just for tests
-            for (int i = 0; i < num_points; ++i) {
-                for (int j = 0; j < 2; ++j) {
-                    printf("%.2f ", control_points[i][j]);
-                }
-                printf("\n");
-            }
-            for (int i = 0; i < num_translation; ++i) {
-                for (int j = 0; j < 2; ++j) {
-                    printf("%.2d ", translation[i][j]);
-                }
-                printf("\n");
-            }
-            for (int i = 0; i < num_rotations; ++i) {
-                printf("%.2d ", rotation[i]);
-                printf("\n");
-            }
-            for (int i = 0; i < num_cisalhamento; ++i) {
-                for (int j = 0; j < 2; ++j) {
-                    printf("%.2d ", cisalhamento[i][j]);
-                }
-                printf("\n");
-            }
-            for (int i = 0; i < num_scaling; ++i) {
-                for (int j = 0; j < 2; ++j) {
-                    printf("%.2d ", scaling[i][j]);
-                }
-                printf("\n");
-            }
-            return num_points;
+    fclose(file);
+
+    //mostrar os dados obtidos pelo arquivo de entrada no terminal
+
+    printf("Pontos de controle:\n");
+    for (const auto& coord : controlPoints) {
+        printf("Ponto: (X: %.1f, Y: %.1f)\n", coord.first, coord.second);
+    }
+
+    for (const auto& transf: transformations) {
+        if(transf.first == TRANSLATION){
+            printf("Valores de translacao: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
         }
+        else if(transf.first == ROTATION){
+            printf("Valor do grau da rotacao: %f\n",transf.second.first);
+        }
+        else if(transf.first == SCALING){
+            printf("Valores de mudanca de escala: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
+        }
+        else if(transf.first == SHEARING){
+            printf("Valores de cisalhamento: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
+        }
+    }
+
+    return 0;
+}
 
 
 
 void draw_axes() {
-
     glColor3f(0.0f, 1.0f, 0.0f); // Green color
     glBegin(GL_LINES);
     glVertex2f(-320.0f, 0.0f);
@@ -182,6 +165,7 @@ void draw_axes() {
     glVertex2f(0.0f, 240.0f);
     glEnd();
 }
+
 int binomialCoefficient(int n, int k) {
     if (k < 0 || k > n) return 0;
     if (k == 0 || k == n) return 1;
@@ -207,11 +191,22 @@ void draw_bezier_curve() {
         float p[2] = {0.0f, 0.0f};
         for (int j = 0; j < num_points; ++j) {
             float blend_factor = binomialCoefficient(num_points - 1, j) * pow(1 - t, num_points - 1 - j) * pow(t, j);
-            p[0] += blend_factor * control_points[j][0];
-            p[1] += blend_factor * control_points[j][1];
+            p[0] += blend_factor * controlPoints[j].first;
+            p[1] += blend_factor * controlPoints[j].second;
         }
 
         glVertex2f(p[0], p[1]);
+    }
+
+    glEnd();
+}
+
+void draw_control_polygon() {
+    glColor3f(0.0f, 0.0f, 0.0f); // Black color
+
+    glBegin(GL_LINE_STRIP);
+    for (int i = 0; i < num_points; ++i) {
+        glVertex2f(controlPoints[i].first, controlPoints[i].second);
     }
 
     glEnd();
@@ -224,20 +219,11 @@ void draw_control_points() {
 
     glBegin(GL_POINTS);
     for (int i = 0; i < num_points; ++i) {
-        glVertex2f(control_points[i][0], control_points[i][1]);
+        glVertex2f(controlPoints[i].first, controlPoints[i].second);
     }
     glEnd();
 }
-void draw_control_polygon() {
-    glColor3f(0.0f, 0.0f, 0.0f); // Black color
 
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < num_points; ++i) {
-        glVertex2f(control_points[i][0], control_points[i][1]);
-    }
-
-    glEnd();
-}
 
 
 int main(int argc, char* argv[]) {
@@ -268,15 +254,17 @@ int main(int argc, char* argv[]) {
     glLoadIdentity();
     glOrtho(-320.0, 320.0, -240.0, 240.0, -1.0, 1.0); // Adjust the projection matrix
     glMatrixMode(GL_MODELVIEW);
-    num_points = loadControlPoints(argv[1], control_points);
-    if (num_points == -1) {
+
+    if (loadControlPoints(argv[1]) == -1) {
         return 1; // Error loading control points
     }
+
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         draw_axes();
         draw_bezier_curve();
+
         if (show_control_polygon) {
             draw_control_points();
             draw_control_polygon();
