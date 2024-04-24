@@ -8,11 +8,12 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
-#define MAX_POINTS 100
+#define MAX_POINTS 200
 #define MAX_TRANS 100
 #define MAX_ROTATION 100
 #define MAX_SCALING 100
 #define MAX_CISALHAMENTO 100
+
 int num_points = 0;
 bool show_control_polygon = false;
 float control_points[MAX_POINTS][2];
@@ -195,27 +196,32 @@ int binomialCoefficient(int n, int k) {
 }
 
 
+
 void draw_bezier_curve() {
     glColor3f(1.0f, 0.0f, 0.0f); // Red color
-    glBegin(GL_LINE_STRIP);
 
     int num_steps = 100;
 
-    for (int i = 0; i <= num_steps; ++i) {
-        float t = static_cast<float>(i) / num_steps;
+    for (size_t k = 0; k < num_points / 4; ++k) {
+        glBegin(GL_LINE_STRIP);
 
-        float p[2] = {0.0f, 0.0f};
-        for (int j = 0; j < num_points; ++j) {
-            float blend_factor = binomialCoefficient(num_points - 1, j) * pow(1 - t, num_points - 1 - j) * pow(t, j);
-            p[0] += blend_factor * control_points[j][0];
-            p[1] += blend_factor * control_points[j][1];
+        for (int i = 0; i <= num_steps; ++i) {
+            float t = static_cast<float>(i) / num_steps;
+
+            float p[2] = {0.0f, 0.0f};
+            for (int j = 0; j < 4; ++j) {
+                float blend_factor = binomialCoefficient(4 - 1, j) * pow(1 - t, 4 - 1 - j) * pow(t, j);
+                p[0] += blend_factor * control_points[k * 4 + j][0];
+                p[1] += blend_factor * control_points[k * 4 + j][1];
+            }
+
+            glVertex2f(p[0], p[1]);
         }
 
-        glVertex2f(p[0], p[1]);
+        glEnd();
     }
-
-    glEnd();
 }
+
 
 // Function to compute binomial coefficient (n choose k)
 void draw_control_points() {
@@ -228,16 +234,25 @@ void draw_control_points() {
     }
     glEnd();
 }
+
 void draw_control_polygon() {
     glColor3f(0.0f, 0.0f, 0.0f); // Black color
 
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < num_points; ++i) {
-        glVertex2f(control_points[i][0], control_points[i][1]);
+    // Draw lines between the control points in segments of four
+    for (int i = 0; i < num_points; i += 4) {
+        glBegin(GL_LINE_STRIP);
+        int end = std::min(i + 4, num_points); // Ensure we don't go beyond the number of points
+        for (int j = i; j < end; ++j) {
+            glVertex2f(control_points[j][0], control_points[j][1]);
+        }
+        glEnd();
     }
-
-    glEnd();
 }
+
+
+
+
+
 
 
 int main(int argc, char* argv[]) {
