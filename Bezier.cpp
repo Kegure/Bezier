@@ -24,7 +24,6 @@ std::vector<std::pair<float, float>> controlPoints;
 //vetor transformacoes (id, valor)
 std::vector<std::pair<char, std::pair<float, float> >> transformations;
 
-#define VETOR 'v'
 #define TRANSLATION 't'
 #define ROTATION 'r'
 #define SCALING 's'
@@ -136,7 +135,7 @@ int loadControlPoints(const char *filename) {
             printf("Valores de translacao: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
         }
         else if(transf.first == ROTATION){
-            printf("Valor do grau da rotacao: %f\n",transf.second.first);
+            printf("Valor do grau da rotacao: %.1f\n",transf.second.first);
         }
         else if(transf.first == SCALING){
             printf("Valores de mudanca de escala: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
@@ -148,8 +147,6 @@ int loadControlPoints(const char *filename) {
 
     return 0;
 }
-
-
 
 void draw_axes() {
     glColor3f(0.0f, 1.0f, 0.0f); // Green color
@@ -178,38 +175,29 @@ int binomialCoefficient(int n, int k) {
     return result;
 }
 
-
 void draw_bezier_curve() {
     glColor3f(1.0f, 0.0f, 0.0f); // Red color
-    glBegin(GL_LINE_STRIP);
 
     int num_steps = 100;
 
-    for (int i = 0; i <= num_steps; ++i) {
-        float t = static_cast<float>(i) / num_steps;
+    for (size_t k = 0; k < num_points / 4; ++k) {
+        glBegin(GL_LINE_STRIP);
 
-        float p[2] = {0.0f, 0.0f};
-        for (int j = 0; j < num_points; ++j) {
-            float blend_factor = binomialCoefficient(num_points - 1, j) * pow(1 - t, num_points - 1 - j) * pow(t, j);
-            p[0] += blend_factor * controlPoints[j].first;
-            p[1] += blend_factor * controlPoints[j].second;
+        for (int i = 0; i <= num_steps; ++i) {
+            float t = static_cast<float>(i) / num_steps;
+
+            float p[2] = {0.0f, 0.0f};
+            for (int j = 0; j < 4; ++j) {
+                float blend_factor = binomialCoefficient(4 - 1, j) * pow(1 - t, 4 - 1 - j) * pow(t, j);
+                p[0] += blend_factor * controlPoints[k * 4 + j].first;
+                p[1] += blend_factor * controlPoints[k * 4 + j].second;
+            }
+
+            glVertex2f(p[0], p[1]);
         }
 
-        glVertex2f(p[0], p[1]);
+        glEnd();
     }
-
-    glEnd();
-}
-
-void draw_control_polygon() {
-    glColor3f(0.0f, 0.0f, 0.0f); // Black color
-
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < num_points; ++i) {
-        glVertex2f(controlPoints[i].first, controlPoints[i].second);
-    }
-
-    glEnd();
 }
 
 // Function to compute binomial coefficient (n choose k)
@@ -224,7 +212,19 @@ void draw_control_points() {
     glEnd();
 }
 
+void draw_control_polygon() {
+    glColor3f(0.0f, 0.0f, 0.0f); // Black color
 
+    // Draw lines between the control points in segments of four
+    for (int i = 0; i < num_points; i += 4) {
+        glBegin(GL_LINE_STRIP);
+        int end = std::min(i + 4, num_points); // Ensure we don't go beyond the number of points
+        for (int j = i; j < end; ++j) {
+            glVertex2f(controlPoints[j].first, controlPoints[j].second);
+        }
+        glEnd();
+    }
+}
 
 int main(int argc, char* argv[]) {
 
