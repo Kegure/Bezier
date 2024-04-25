@@ -84,11 +84,19 @@ void applyTranslationOnDraw(){
     }
 }
 
-void applyRotationOnDraw(){
+void applyRotationOnDraw() {
     float angle = transformations[posTransf].second.first * (M_PI / 180.0); // Converter graus para radianos
+    float x, y;
+
+    std::cout << "Digite x: ";
+    std::cin >> x;
+
+    std::cout << "Digite y: ";
+    std::cin >> y;
+
     for (auto& point : actualDraw) {
-        float new_x = point.first * cos(angle) - point.second * sin(angle);
-        float new_y = point.first * sin(angle) + point.second * cos(angle);
+        float new_x = (point.first - x) * cos(angle) - (point.second - y) * sin(angle);
+        float new_y = (point.first - x) * sin(angle) + (point.second - y)  * cos(angle);
         point.first = new_x;
         point.second = new_y;
     }
