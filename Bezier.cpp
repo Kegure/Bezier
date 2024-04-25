@@ -1,13 +1,8 @@
-//
-// Created by kegure on 4/12/24.
-//
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <iostream>
 #include <cmath>
-#include <cstdlib>
 #include <fstream>
-#include <sstream>
 #include <vector>
 
 #define SCREEN_WIDTH 640
@@ -94,8 +89,8 @@ void applyRotationOnDraw(){
 
 void applyScalingOnDraw(){
     for (auto& point : actualDraw) {
-        point.first = transformations[posTransf].second.first; // Escala em X
-        point.second= transformations[posTransf].second.second; // Escala em Y
+        point.first *= transformations[posTransf].second.first; // Escala em X
+        point.second *= transformations[posTransf].second.second; // Escala em Y
     }
 }
 
@@ -115,32 +110,31 @@ void applyReflectionOnDraw(){
     }
 }
 
+
 void applyTransformation(){
     drawBeforeTransformation.assign(actualDraw.begin(), actualDraw.end());
-    if(posTransf > transformations.size()){
+    if(posTransf >= transformations.size()){
         posTransf = 0;
         actualDraw.assign(controlPoints.begin(), controlPoints.end());
         return;
-    }
-    if(transformations[posTransf].first == TRANSLATION){
+    }if(transformations[posTransf].first == TRANSLATION){
         applyTranslationOnDraw();
 
-    }else if(transformations[posTransf].first == ROTATION){
+    }if(transformations[posTransf].first == ROTATION){
         applyRotationOnDraw();
 
-    }else if(transformations[posTransf].first == SCALING){
+    }if(transformations[posTransf].first == SCALING){
         applyScalingOnDraw();
 
-    }else if(transformations[posTransf].first == SHEARING){
+    }if(transformations[posTransf].first == SHEARING) {
         applyShearingOnDraw();
-
-    }else if(transformations[posTransf].first == REFLECTION){
+    }if(transformations[posTransf].first == REFLECTION){
         applyReflectionOnDraw();
     }
     posTransf++;
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void key_callback(GLFWwindow* window, int key, int action) {
     if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
@@ -217,16 +211,19 @@ int loadControlPoints(const char *filename) {
 
     for (const auto& transf: transformations) {
         if(transf.first == TRANSLATION){
-            printf("Valores de translacao: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
+            printf("Valores de translacao: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
         }
         else if(transf.first == ROTATION){
             printf("Valor do grau da rotacao: %.1f\n",transf.second.first);
         }
         else if(transf.first == SCALING){
-            printf("Valores de mudanca de escala: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
+            printf("Valores de mudanca de escala: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
         }
         else if(transf.first == SHEARING){
-            printf("Valores de cisalhamento: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.first);
+            printf("Valores de cisalhamento: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
+        }
+        else if(transf.first == REFLECTION){
+            printf("Valores de reflexao: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
         }
     }
 
