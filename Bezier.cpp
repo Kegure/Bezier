@@ -371,10 +371,6 @@ int main(int argc, char* argv[]) {
         draw_bezier_curve(actualDraw, colors[2]);
 
         if (show_control_polygon) {
-            if(posTransf != 0){
-                draw_control_points(drawBeforeTransformation);
-                draw_control_polygon(drawBeforeTransformation);
-            }
             draw_control_points(actualDraw);
             draw_control_polygon(actualDraw);
         }
