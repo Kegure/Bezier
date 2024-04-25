@@ -1,12 +1,19 @@
+//
+// Created by kegure on 4/12/24.
+//
+
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
+#include <sstream>
 #include <vector>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
+
 
 int num_points = 0;
 
@@ -41,7 +48,7 @@ typedef struct {
 } Color;
 Color colors[25] = {
         {1.0f, 0.0f, 0.0f},   // Red
-        {1.0f, 0.647f, 0.0f}, // Orange
+        {48.0f, 255.0f, 113.0f}, // rosa barbie
         {1.0f, 0.843f, 0.0f}, // Gold
         {0.941f, 0.902f, 0.549f}, // Khaki
         {0.855f, 0.647f, 0.125f}, // DarkGoldenrod
@@ -104,6 +111,7 @@ void applyShearingOnDraw(){
 }
 
 void applyReflectionOnDraw(){
+    // Aplicar a reflexão nos pontos
     for (auto& point : actualDraw) {
         point.first = 2 * transformations[posTransf].second.first - point.first;
         point.second = 2 * transformations[posTransf].second.second - point.second;
@@ -117,7 +125,8 @@ void applyTransformation(){
         posTransf = 0;
         actualDraw.assign(controlPoints.begin(), controlPoints.end());
         return;
-    }if(transformations[posTransf].first == TRANSLATION){
+    }
+    if(transformations[posTransf].first == TRANSLATION){
         applyTranslationOnDraw();
 
     }if(transformations[posTransf].first == ROTATION){
@@ -134,7 +143,7 @@ void applyTransformation(){
     posTransf++;
 }
 
-void key_callback(GLFWwindow* window, int key, int action) {
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
@@ -232,15 +241,25 @@ int loadControlPoints(const char *filename) {
 
 void draw_axes() {
     glColor3f(0.0f, 1.0f, 0.0f); // Green color
+    glLineWidth(1.5f);
     glBegin(GL_LINES);
     glVertex2f(-320.0f, 0.0f);
+    glVertex2f(320.0f, 0.0f);
+    glVertex2f(300.0f, 20.0f);
+    glVertex2f(320.0f, 0.0f);
+    glVertex2f(300.0f, -20.0f);
     glVertex2f(320.0f, 0.0f);
     glEnd();
 
 
     glColor3f(0.0f, 0.0f, 1.0f); // Blue color
+    glLineWidth(1.5f);
     glBegin(GL_LINES);
     glVertex2f(0.0f, -240.0f);
+    glVertex2f(0.0f, 240.0f);
+    glVertex2f(-20.0f, 220.0f);
+    glVertex2f(0.0f, 240.0f);
+    glVertex2f(20.0f, 220.0f);
     glVertex2f(0.0f, 240.0f);
     glEnd();
 }
@@ -259,6 +278,7 @@ int binomialCoefficient(int n, int k) {
 
 void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw, Color curveColor) {
     glColor3f(curveColor.r, curveColor.g, curveColor.b); // Red color
+    glLineWidth(3.0f);
 
     int num_steps = 100;
 
@@ -345,13 +365,13 @@ int main(int argc, char* argv[]) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         draw_axes();
-        if(!drawBeforeTransformation.empty()){
-            draw_bezier_curve(drawBeforeTransformation, colors[10]);
+        if(posTransf != 0){
+            draw_bezier_curve(drawBeforeTransformation, colors[1]);
         }
         draw_bezier_curve(actualDraw, colors[2]);
 
         if (show_control_polygon) {
-            if(!drawBeforeTransformation.empty()){
+            if(posTransf != 0){
                 draw_control_points(drawBeforeTransformation);
                 draw_control_polygon(drawBeforeTransformation);
             }
