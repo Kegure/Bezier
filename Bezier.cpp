@@ -66,30 +66,32 @@ void applyTranslationOnDraw() {
 void applyRotationOnDraw() {
     float pi = static_cast<float>(M_PI);
     float angle = transformations[posTransf].second.first * (pi / 180.0); // Converter graus para radianos
-    float x, y;
+    float x0, y0; //ponto a ser rotacionado em torno
 
-    std::cout << "Digite x: ";
-    std::cin >> x;
+    std::cout << "Digite x0: ";
+    std::cin >> x0;
 
-    std::cout << "Digite y: ";
-    std::cin >> y;
+    std::cout << "Digite y0: ";
+    std::cin >> y0;
 
     for (auto& point : actualDraw) {
-        float new_x = (point.first - x) * cos(angle) - (point.second - y) * sin(angle);
-        float new_y = (point.first - x) * sin(angle) + (point.second - y) * cos(angle);
+        float new_x = (point.first - x0) * cos(angle) - (point.second - y0) * sin(angle);
+        float new_y = (point.first - x0) * sin(angle) + (point.second - y0) * cos(angle);
         point.first = new_x;
         point.second = new_y;
     }
 }
 
-void applyScalingOnDraw() {
+void applyScalingOnDraw() { //precisa modificar
+
     for (auto& point : actualDraw) {
         point.first *= transformations[posTransf].second.first; 
         point.second *= transformations[posTransf].second.second; 
     }
 }
 
-void applyShearingOnDraw() {
+void applyShearingOnDraw() {//precisa modificar
+
     for (auto& point : actualDraw) {
         float new_x = point.first + transformations[posTransf].second.first * point.second; 
         float new_y = point.second + transformations[posTransf].second.second * point.first; 
@@ -301,8 +303,8 @@ void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw, Color
 }
 
 void draw_control_points(std::vector<std::pair<float, float>> pointsForDraw) {
-    glColor3f(0.5451f, 0.0f, 0.0f); //vermelho escuro
-    glPointSize(7.0f);
+    glColor3f(1.0f, 0.5f, 0.8f); //rosa
+    glPointSize(5.0f);
 
     glBegin(GL_POINTS);
     for (int i = 0; i < num_points; ++i) {
