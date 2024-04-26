@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/untitled.dir/Bezier.cpp.o CMakeFiles/untitled.dir/teste.cpp.o -o untitled  -lglut -lglfw -lGLEW -lGL -lGLU -lSDL2 
