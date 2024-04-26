@@ -1,0 +1,5 @@
+#ignorar pasta do debug do clion
+cmake-build-debug/
+
+#ignora a pasta idea criada pela IDE
+.idea/
