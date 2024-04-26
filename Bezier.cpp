@@ -14,7 +14,6 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-
 int num_points = 0;
 
 //Variável para controlar a exibição do polígono de controle
@@ -106,7 +105,6 @@ void applyReflectionOnDraw() {
         point.second = 2 * transformations[posTransf].second.second - point.second;
     }
 }
-
 
 void applyTransformation() {
     drawBeforeTransformation.assign(actualDraw.begin(), actualDraw.end());
@@ -276,8 +274,6 @@ int binomialCoefficient(int n, int k) {
     return result;
 }
 
-
-
 void draw_bezier_curve() {
     glColor3f(1.0f, 0.0f, 0.0f); // Red color
     glBegin(GL_LINE_STRIP);
@@ -323,7 +319,6 @@ void draw_control_polygon() {
 
     glEnd();
 }
-
 
 int main(int argc, char* argv[]) {
 
