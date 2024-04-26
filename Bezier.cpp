@@ -1,15 +1,15 @@
-//
-// Created by kegure on 4/12/24.
-//
+#define _USE_MATH_DEFINES
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <iostream>
-#include <cmath>
+#include <math.h>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -46,38 +46,17 @@ typedef struct {
     float g;
     float b;
 } Color;
-Color colors[25] = {
-        {1.0f, 0.0f, 0.0f},   // Red
-        {48.0f, 255.0f, 113.0f}, // rosa barbie
-        {1.0f, 0.843f, 0.0f}, // Gold
-        {0.941f, 0.902f, 0.549f}, // Khaki
-        {0.855f, 0.647f, 0.125f}, // DarkGoldenrod
-        {0.824f, 0.706f, 0.549f}, // BurlyWood
-        {0.863f, 0.863f, 0.863f}, // Silver
-        {0.804f, 0.522f, 0.247f}, // Sienna
-        {0.545f, 0.271f, 0.075f}, // SaddleBrown
-        {0.8f, 0.522f, 0.247f},   // Tan
-        {0.804f, 0.522f, 0.247f}, // Peru
-        {0.804f, 0.361f, 0.361f}, // IndianRed
-        {1.0f, 0.412f, 0.706f},   // MediumVioletRed
-        {1.0f, 0.753f, 0.796f},   // Pink
-        {0.737f, 0.561f, 0.561f}, // RosyBrown
-        {0.824f, 0.706f, 0.549f}, // SandyBrown
-        {1.0f, 0.765f, 0.796f},   // LavenderBlush
-        {1.0f, 0.894f, 0.882f},   // MistyRose
-        {0.957f, 0.643f, 0.376f}, // PeachPuff
-        {1.0f, 0.855f, 0.725f},    // BlanchedAlmond
-        {0.937f, 0.502f, 0.502f}, // Coral
-        {1.0f, 0.388f, 0.278f},   // Tomato
-        {1.0f, 0.627f, 0.478f},   // Salmon
-        {0.863f, 0.078f, 0.235f}, // Crimson
-        {0.647f, 0.165f, 0.165f}  // Brown
+Color colors[2] = {
+        {0.87451f, 0.18824f, 0.47451f},//rosa
+        {1.0f, 1.0f, 1.0f} // branco
+
+
 };
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void applyTranslationOnDraw(){
+void applyTranslationOnDraw() {
     for (auto& point : actualDraw) {
         point.first += transformations[posTransf].second.first;
         point.second += transformations[posTransf].second.second;
@@ -85,7 +64,8 @@ void applyTranslationOnDraw(){
 }
 
 void applyRotationOnDraw() {
-    float angle = transformations[posTransf].second.first * (M_PI / 180.0); // Converter graus para radianos
+    float pi = static_cast<float>(M_PI);
+    float angle = transformations[posTransf].second.first * (pi / 180.0); // Converter graus para radianos
     float x, y;
 
     std::cout << "Digite x: ";
@@ -96,30 +76,29 @@ void applyRotationOnDraw() {
 
     for (auto& point : actualDraw) {
         float new_x = (point.first - x) * cos(angle) - (point.second - y) * sin(angle);
-        float new_y = (point.first - x) * sin(angle) + (point.second - y)  * cos(angle);
+        float new_y = (point.first - x) * sin(angle) + (point.second - y) * cos(angle);
         point.first = new_x;
         point.second = new_y;
     }
 }
 
-void applyScalingOnDraw(){
+void applyScalingOnDraw() {
     for (auto& point : actualDraw) {
-        point.first *= transformations[posTransf].second.first; // Escala em X
-        point.second *= transformations[posTransf].second.second; // Escala em Y
+        point.first *= transformations[posTransf].second.first; 
+        point.second *= transformations[posTransf].second.second; 
     }
 }
 
-void applyShearingOnDraw(){
+void applyShearingOnDraw() {
     for (auto& point : actualDraw) {
-        float new_x = point.first + transformations[posTransf].second.first * point.second; // Cisalhamento em X
-        float new_y = point.second + transformations[posTransf].second.second * point.first; // Cisalhamento em Y
+        float new_x = point.first + transformations[posTransf].second.first * point.second; 
+        float new_y = point.second + transformations[posTransf].second.second * point.first; 
         point.first = new_x;
         point.second = new_y;
     }
 }
 
-void applyReflectionOnDraw(){
-    // Aplicar a reflexão nos pontos
+void applyReflectionOnDraw() {
     for (auto& point : actualDraw) {
         point.first = 2 * transformations[posTransf].second.first - point.first;
         point.second = 2 * transformations[posTransf].second.second - point.second;
@@ -127,25 +106,25 @@ void applyReflectionOnDraw(){
 }
 
 
-void applyTransformation(){
+void applyTransformation() {
     drawBeforeTransformation.assign(actualDraw.begin(), actualDraw.end());
-    if(posTransf >= transformations.size()){
+    if (posTransf >= transformations.size()) {
         posTransf = 0;
         actualDraw.assign(controlPoints.begin(), controlPoints.end());
         return;
     }
-    if(transformations[posTransf].first == TRANSLATION){
+    else if (transformations[posTransf].first == TRANSLATION) {
         applyTranslationOnDraw();
 
-    }if(transformations[posTransf].first == ROTATION){
+    }else if (transformations[posTransf].first == ROTATION) {
         applyRotationOnDraw();
 
-    }if(transformations[posTransf].first == SCALING){
+    }else if (transformations[posTransf].first == SCALING) {
         applyScalingOnDraw();
 
-    }if(transformations[posTransf].first == SHEARING) {
+    }else if (transformations[posTransf].first == SHEARING) {
         applyShearingOnDraw();
-    }if(transformations[posTransf].first == REFLECTION){
+    }else if (transformations[posTransf].first == REFLECTION) {
         applyReflectionOnDraw();
     }
     posTransf++;
@@ -158,61 +137,72 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         show_control_polygon = !show_control_polygon; // vizualizar o poligono
     }
-    if(key == GLFW_KEY_SPACE && action == GLFW_PRESS){ //aplicar transformacoes
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) { //aplicar transformacoes
         applyTransformation();
     }
 }
 
-int loadControlPoints(const char *filename) {
+int loadControlPoints(const char* filename) {
     float x, y;
     int degrees;
-    FILE *file = fopen(filename, "r");
+    FILE* file = fopen(filename, "r");
     if (file == NULL) {
         printf("Error opening file!\n");
-        return -1; // Return an error code
+        return -1; 
     }
 
-    char line[100]; // Assuming maximum line length is 100 characters
+    char line[100]; 
     while (fgets(line, sizeof(line), file)) {
         if (line[0] == 'v') {
             if (sscanf(line, "v %f %f", &x, &y) == 2) {
                 controlPoints.emplace_back(x, y);
                 num_points++;
-            } else {
+            }
+            else {
                 printf("Error parsing line: %s\n", line);
             }
 
-        } else if (line[0] == 't') {
+        }
+        else if (line[0] == 't') {
             if (sscanf(line, "t %f %f", &x, &y) == 2) {
-                transformations.emplace_back(TRANSLATION, std::make_pair(x,y));
-            } else {
+                transformations.emplace_back(TRANSLATION, std::make_pair(x, y));
+            }
+            else {
                 printf("Error parsing line: %s\n", line);
             }
 
-        } else if (line[0] == 'r') {
+        }
+        else if (line[0] == 'r') {
             if (sscanf(line, "r %d", &degrees) == 1) {
-                transformations.emplace_back(ROTATION, std::make_pair(degrees,0));
-            } else {
+                transformations.emplace_back(ROTATION, std::make_pair(degrees, 0));
+            }
+            else {
                 printf("Error parsing line: %s\n", line);
             }
-        } else if (line[0] == 's') {
+        }
+        else if (line[0] == 's') {
             if (sscanf(line, "s %f %f", &x, &y) == 2) {
-                transformations.emplace_back(SCALING, std::make_pair(x,y));
-            } else {
+                transformations.emplace_back(SCALING, std::make_pair(x, y));
+            }
+            else {
                 printf("Error parsing line: %s\n", line);
             }
 
-        } else if (line[0] == 'c') {
+        }
+        else if (line[0] == 'c') {
             if (sscanf(line, "c %f %f", &x, &y) == 2) {
-                transformations.emplace_back(SHEARING, std::make_pair(x,y));
-            } else {
+                transformations.emplace_back(SHEARING, std::make_pair(x, y));
+            }
+            else {
                 printf("Error parsing line: %s\n", line);
             }
 
-        } else if (line[0] == 'm') {
+        }
+        else if (line[0] == 'm') {
             if (sscanf(line, "m %f %f", &x, &y) == 2) {
-                transformations.emplace_back(REFLECTION, std::make_pair(x,y));
-            } else {
+                transformations.emplace_back(REFLECTION, std::make_pair(x, y));
+            }
+            else {
                 printf("Error parsing line: %s\n", line);
             }
         }
@@ -226,20 +216,20 @@ int loadControlPoints(const char *filename) {
         printf("Ponto: (X: %.1f, Y: %.1f)\n", coord.first, coord.second);
     }
 
-    for (const auto& transf: transformations) {
-        if(transf.first == TRANSLATION){
+    for (const auto& transf : transformations) {
+        if (transf.first == TRANSLATION) {
             printf("Valores de translacao: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
         }
-        else if(transf.first == ROTATION){
-            printf("Valor do grau da rotacao: %.1f\n",transf.second.first);
+        else if (transf.first == ROTATION) {
+            printf("Valor do grau da rotacao: %.1f\n", transf.second.first);
         }
-        else if(transf.first == SCALING){
+        else if (transf.first == SCALING) {
             printf("Valores de mudanca de escala: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
         }
-        else if(transf.first == SHEARING){
+        else if (transf.first == SHEARING) {
             printf("Valores de cisalhamento: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
         }
-        else if(transf.first == REFLECTION){
+        else if (transf.first == REFLECTION) {
             printf("Valores de reflexao: (X: %.1f, Y: %.1f)\n", transf.second.first, transf.second.second);
         }
     }
@@ -248,7 +238,7 @@ int loadControlPoints(const char *filename) {
 }
 
 void draw_axes() {
-    glColor3f(0.0f, 1.0f, 0.0f); // Green color
+    glColor3f(0.21569f, 0.62745f, 0.37255f); // verde 
     glLineWidth(1.5f);
     glBegin(GL_LINES);
     glVertex2f(-320.0f, 0.0f);
@@ -260,7 +250,7 @@ void draw_axes() {
     glEnd();
 
 
-    glColor3f(0.0f, 0.0f, 1.0f); // Blue color
+    glColor3f(0.23922f, 0.12941f, 0.76863f); // azul
     glLineWidth(1.5f);
     glBegin(GL_LINES);
     glVertex2f(0.0f, -240.0f);
@@ -285,7 +275,7 @@ int binomialCoefficient(int n, int k) {
 }
 
 void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw, Color curveColor) {
-    glColor3f(curveColor.r, curveColor.g, curveColor.b); // Red color
+    glColor3f(curveColor.r, curveColor.g, curveColor.b);
     glLineWidth(3.0f);
 
     int num_steps = 100;
@@ -296,7 +286,7 @@ void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw, Color
         for (int i = 0; i <= num_steps; ++i) {
             float t = static_cast<float>(i) / num_steps;
 
-            float p[2] = {0.0f, 0.0f};
+            float p[2] = { 0.0f, 0.0f };
             for (int j = 0; j < 4; ++j) {
                 float blend_factor = binomialCoefficient(4 - 1, j) * pow(1 - t, 4 - 1 - j) * pow(t, j);
                 p[0] += blend_factor * pointsForDraw[k * 4 + j].first;
@@ -310,10 +300,9 @@ void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw, Color
     }
 }
 
-// Function to compute binomial coefficient (n choose k)
 void draw_control_points(std::vector<std::pair<float, float>> pointsForDraw) {
-    glColor3f(0.0f, 0.0f, 0.0f);
-    glPointSize(4.0f);
+    glColor3f(0.5451f, 0.0f, 0.0f); //vermelho escuro
+    glPointSize(7.0f);
 
     glBegin(GL_POINTS);
     for (int i = 0; i < num_points; ++i) {
@@ -323,12 +312,11 @@ void draw_control_points(std::vector<std::pair<float, float>> pointsForDraw) {
 }
 
 void draw_control_polygon(std::vector<std::pair<float, float>> pointsForDraw) {
-    glColor3f(0.0f, 0.0f, 0.0f); // Black color
+    glColor3f(0.92157f, 0.53725f, 0.0f); // laranja
 
-    // Draw lines between the control points in segments of four
     for (int i = 0; i < num_points; i += 4) {
         glBegin(GL_LINE_STRIP);
-        int end = std::min(i + 4, num_points); // Ensure we don't go beyond the number of points
+        int end = std::min(i + 4, num_points); 
         for (int j = i; j < end; ++j) {
             glVertex2f(pointsForDraw[j].first, pointsForDraw[j].second);
         }
@@ -359,24 +347,24 @@ int main(int argc, char* argv[]) {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback);
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); //background preto
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-320.0, 320.0, -240.0, 240.0, -1.0, 1.0); // Adjust the projection matrix
+    glOrtho(-320.0, 320.0, -240.0, 240.0, -1.0, 1.0); 
     glMatrixMode(GL_MODELVIEW);
 
     if (loadControlPoints(argv[1]) == -1) {
-        return 1; // Error loading control points
+        return 1; 
     }
     actualDraw.assign(controlPoints.begin(), controlPoints.end());
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         draw_axes();
-        if(posTransf != 0){
+        if (posTransf != 0) {
             draw_bezier_curve(drawBeforeTransformation, colors[1]);
         }
-        draw_bezier_curve(actualDraw, colors[2]);
+        draw_bezier_curve(actualDraw, colors[0]);
 
         if (show_control_polygon) {
             draw_control_points(actualDraw);
