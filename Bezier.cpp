@@ -82,7 +82,7 @@ void applyRotationOnDraw() {
     }
 }
 
-std::vector<std::pair<float, float>> getDrawCentralPoint(){
+std::vector<std::pair<float, float>> getDrawCentralPoint() {
     std::vector<std::pair<float, float>> centralPoint;
     float centralCoord_x = 0.0f;
     float centralCoord_y = 0.0f;
@@ -107,20 +107,13 @@ void applyScalingOnDraw() {
 }
 
 void applyShearingOnDraw() { // modificar
-    // Calcular o centro de massa dos pontos antes da transformação
-    float centroid_x = 0.0f;
-    float centroid_y = 0.0f;
-    for (const auto& point : drawBeforeTransformation) {
-        centroid_x += point.first;
-        centroid_y += point.second;
-    }
-    centroid_x /= drawBeforeTransformation.size();
-    centroid_y /= drawBeforeTransformation.size();
+    //pegar ponto central do desenho
+    std::vector<std::pair<float, float>> centralPointDraw = getDrawCentralPoint();
 
     // Aplicar a transformação em relação ao centro de massa
     for (auto& point : actualDraw) {
-        float new_x = centroid_x + point.first + transformations[posTransf].second.first * (point.second - centroid_y);
-        float new_y = centroid_y + point.second + transformations[posTransf].second.second * (point.first - centroid_x);
+        float new_x = point.first + transformations[posTransf].second.first * (point.second - centralPointDraw[0].second);
+        float new_y = point.second + transformations[posTransf].second.second * (point.first - centralPointDraw[0].first);
         point.first = new_x;
         point.second = new_y;
     }
@@ -144,15 +137,19 @@ void applyTransformation() {
     else if (transformations[posTransf].first == TRANSLATION) {
         applyTranslationOnDraw();
 
-    }else if (transformations[posTransf].first == ROTATION) {
+    }
+    else if (transformations[posTransf].first == ROTATION) {
         applyRotationOnDraw();
 
-    }else if (transformations[posTransf].first == SCALING) {
+    }
+    else if (transformations[posTransf].first == SCALING) {
         applyScalingOnDraw();
 
-    }else if (transformations[posTransf].first == SHEARING) {
+    }
+    else if (transformations[posTransf].first == SHEARING) {
         applyShearingOnDraw();
-    }else if (transformations[posTransf].first == REFLECTION) {
+    }
+    else if (transformations[posTransf].first == REFLECTION) {
         applyReflectionOnDraw();
     }
     posTransf++;
