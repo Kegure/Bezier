@@ -14,6 +14,7 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
+
 int num_points = 0;
 
 //Variável para controlar a exibição do polígono de controle
@@ -81,19 +82,45 @@ void applyRotationOnDraw() {
     }
 }
 
-void applyScalingOnDraw() { //precisa modificar
+std::vector<std::pair<float, float>> getDrawCentralPoint(){
+    std::vector<std::pair<float, float>> centralPoint;
+    float centralCoord_x = 0.0f;
+    float centralCoord_y = 0.0f;
+    for (const auto& point : drawBeforeTransformation) {
+        centralCoord_x += point.first;
+        centralCoord_y += point.second;
+    }
+    centralCoord_x /= drawBeforeTransformation.size();
+    centralCoord_y /= drawBeforeTransformation.size();
+    centralPoint.emplace_back(centralCoord_x, centralCoord_y);
+    return centralPoint;
+}
 
+void applyScalingOnDraw() {
+    //pegar ponto central do desenho
+    std::vector<std::pair<float, float>> centralPointDraw = getDrawCentralPoint();
+    // Aplicar a transformação em relação ao centro do desenho
     for (auto& point : actualDraw) {
-        point.first *= transformations[posTransf].second.first; 
-        point.second *= transformations[posTransf].second.second; 
+        point.first = centralPointDraw[0].first + (point.first - centralPointDraw[0].first) * transformations[posTransf].second.first;
+        point.second = centralPointDraw[0].second + (point.second - centralPointDraw[0].second) * transformations[posTransf].second.second;
     }
 }
 
-void applyShearingOnDraw() {//precisa modificar
+void applyShearingOnDraw() { // modificar
+    // Calcular o centro de massa dos pontos antes da transformação
+    float centroid_x = 0.0f;
+    float centroid_y = 0.0f;
+    for (const auto& point : drawBeforeTransformation) {
+        centroid_x += point.first;
+        centroid_y += point.second;
+    }
+    centroid_x /= drawBeforeTransformation.size();
+    centroid_y /= drawBeforeTransformation.size();
 
+    // Aplicar a transformação em relação ao centro de massa
     for (auto& point : actualDraw) {
-        float new_x = point.first + transformations[posTransf].second.first * point.second; 
-        float new_y = point.second + transformations[posTransf].second.second * point.first; 
+        float new_x = centroid_x + point.first + transformations[posTransf].second.first * (point.second - centroid_y);
+        float new_y = centroid_y + point.second + transformations[posTransf].second.second * (point.first - centroid_x);
         point.first = new_x;
         point.second = new_y;
     }
@@ -105,6 +132,7 @@ void applyReflectionOnDraw() {
         point.second = 2 * transformations[posTransf].second.second - point.second;
     }
 }
+
 
 void applyTransformation() {
     drawBeforeTransformation.assign(actualDraw.begin(), actualDraw.end());
@@ -148,10 +176,10 @@ int loadControlPoints(const char* filename) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
         printf("Error opening file!\n");
-        return -1; 
+        return -1;
     }
 
-    char line[100]; 
+    char line[100];
     while (fgets(line, sizeof(line), file)) {
         if (line[0] == 'v') {
             if (sscanf(line, "v %f %f", &x, &y) == 2) {
@@ -238,7 +266,7 @@ int loadControlPoints(const char* filename) {
 }
 
 void draw_axes() {
-    glColor3f(0.21569f, 0.62745f, 0.37255f); // verde 
+    glColor3f(0.21569f, 0.62745f, 0.37255f); // verde
     glLineWidth(1.5f);
     glBegin(GL_LINES);
     glVertex2f(-320.0f, 0.0f);
@@ -274,9 +302,9 @@ int binomialCoefficient(int n, int k) {
     return result;
 }
 
-void draw_bezier_curve() {
-    glColor3f(1.0f, 0.0f, 0.0f); // Red color
-    glBegin(GL_LINE_STRIP);
+void draw_bezier_curve(std::vector<std::pair<float, float>> pointsForDraw, Color curveColor) {
+    glColor3f(curveColor.r, curveColor.g, curveColor.b);
+    glLineWidth(3.0f);
 
     int num_steps = 100;
 
@@ -286,17 +314,18 @@ void draw_bezier_curve() {
         for (int i = 0; i <= num_steps; ++i) {
             float t = static_cast<float>(i) / num_steps;
 
-        float p[2] = {0.0f, 0.0f};
-        for (int j = 0; j < num_points; ++j) {
-            float blend_factor = binomialCoefficient(num_points - 1, j) * pow(1 - t, num_points - 1 - j) * pow(t, j);
-            p[0] += blend_factor * control_points[j][0];
-            p[1] += blend_factor * control_points[j][1];
-        }
+            float p[2] = { 0.0f, 0.0f };
+            for (int j = 0; j < 4; ++j) {
+                float blend_factor = binomialCoefficient(4 - 1, j) * pow(1 - t, 4 - 1 - j) * pow(t, j);
+                p[0] += blend_factor * pointsForDraw[k * 4 + j].first;
+                p[1] += blend_factor * pointsForDraw[k * 4 + j].second;
+            }
 
             glVertex2f(p[0], p[1]);
         }
 
-    glEnd();
+        glEnd();
+    }
 }
 
 void draw_control_points(std::vector<std::pair<float, float>> pointsForDraw) {
@@ -309,15 +338,18 @@ void draw_control_points(std::vector<std::pair<float, float>> pointsForDraw) {
     }
     glEnd();
 }
-void draw_control_polygon() {
-    glColor3f(0.0f, 0.0f, 0.0f); // Black color
 
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < num_points; ++i) {
-        glVertex2f(control_points[i][0], control_points[i][1]);
+void draw_control_polygon(std::vector<std::pair<float, float>> pointsForDraw) {
+    glColor3f(0.92157f, 0.53725f, 0.0f); // laranja
+
+    for (int i = 0; i < num_points; i += 4) {
+        glBegin(GL_LINE_STRIP);
+        int end = std::min(i + 4, num_points);
+        for (int j = i; j < end; ++j) {
+            glVertex2f(pointsForDraw[j].first, pointsForDraw[j].second);
+        }
+        glEnd();
     }
-
-    glEnd();
 }
 
 int main(int argc, char* argv[]) {
@@ -346,11 +378,11 @@ int main(int argc, char* argv[]) {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f); //background preto
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-320.0, 320.0, -240.0, 240.0, -1.0, 1.0); 
+    glOrtho(-320.0, 320.0, -240.0, 240.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
 
     if (loadControlPoints(argv[1]) == -1) {
-        return 1; 
+        return 1;
     }
     actualDraw.assign(controlPoints.begin(), controlPoints.end());
     while (!glfwWindowShouldClose(window)) {
